@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giriş Yap - Akıllı MS Takip</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .auth-container { max-width: 400px; margin: 50px auto; padding: 30px; background-color: #FFFFFF; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); }
+        .auth-container h1 { color: #2E8B57; text-align: center; margin-bottom: 30px; border-bottom: 2px solid #D4EDDA; padding-bottom: 10px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: bold; color: #455A64; }
+        .form-group input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 1em; }
+        .form-group input[type="submit"] { background-color: #2D6A4F; color: white; border: none; cursor: pointer; transition: background-color 0.3s; font-weight: bold; margin-top: 10px; }
+        .form-group input[type="submit"]:hover { background-color: #1E4F39; }
+        .link-area { text-align: center; margin-top: 20px; font-size: 0.9em; }
+        .link-area a { color: #2D6A4F; text-decoration: none; }
+        #errorMessage { color: red; text-align: center; margin-top: 10px; display: none; }
+    </style>
+</head>
+<body>
+    <header class="sub-header">
+        <h1>Akıllı MS Takip Sistemi</h1>
+    </header>
+    <main>
+        <!-- Giriş Formu -->
+        <div class="auth-container">
+            <h1>Giriş</h1>
+            
+            <form id="loginForm" action="/api/auth/login" method="POST">
+                
+                <div class="form-group">
+                    <label for="email">E-posta Adresi</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Şifre</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+
+                <div class="form-group">
+                    <input type="submit" value="Giriş Yap">
+                </div>
+            </form>
+            
+            <div id="errorMessage"></div>
+
+            <div class="link-area">
+                <p><a href="forgot-password.html">Şifremi Unuttum</a></p>
+                <p>Henüz hesabınız yok mu? <a href="signup.html">Hemen Kayıt Olun</a></p>
+            </div>
+        </div>
+    </main>
+    <footer>
+        <p>© 2025 Akıllı MS Takip ve Analiz Sistemi</p>
+    </footer>
+
+    <script>
+        // Forma ID ile bağlanma
+        const loginForm = document.getElementById('loginForm');
+        const errorMessage = document.getElementById('errorMessage');
+
+        loginForm.addEventListener('submit', async function(event) {
+            // Formun normal sunucuya gönderilmesini engelle
+            event.preventDefault(); 
+            errorMessage.style.display = 'none'; // Eski hata mesajını temizle
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Başarılı giriş
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('firstName', data.firstName);
+                    
+                    // Kullanıcıyı Kontrol Paneline yönlendir
+                    window.location.href = 'dashboard.html';
+                } else {
+                    // Başarısız giriş (Örn: Şifre hatalı)
+                    errorMessage.textContent = 'Hata: ' + data.message;
+                    errorMessage.style.display = 'block';
+                }
+
+            } catch (error) {
+                console.error('Giriş sırasında bir hata oluştu:', error);
+                errorMessage.textContent = 'Sunucuya bağlanırken bir hata oluştu.';
+                errorMessage.style.display = 'block';
+            }
+        });
+    </script>
+    </body>
+</html>

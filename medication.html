@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İlaç Takibi - Akıllı MS Takip</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .medication-container { max-width: 900px; margin: 40px auto; padding: 20px; }
+        .section-card { background-color: #FFFFFF; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        .section-card h2 { color: #004085; border-bottom: 2px solid #E6F7FF; padding-bottom: 10px; margin-top: 0; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: bold; color: #455A64; }
+        .form-group input[type="text"], .form-group input[type="date"], .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        .submit-button { background-color: #2D6A4F; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; transition: background-color 0.3s; font-weight: bold; }
+        .submit-button:hover { background-color: #1E4F39; }
+        #formMessage { margin-top: 15px; padding: 10px; border-radius: 5px; display: none; }
+        .success { background-color: #D4EDDA; color: #155724; }
+        .error { background-color: #F8D7DA; color: #721C24; }
+        .back-btn-container { text-align: center; margin-top: 30px; }
+        .back-btn { display: inline-block; padding: 10px 25px; background-color: #6C757D; color: white; text-decoration: none; border-radius: 20px; font-weight: bold; transition: background-color 0.3s; }
+        .back-btn:hover { background-color: #5a6268; }
+
+        /* LİSTE STİLLERİ */
+        .med-list { list-style: none; padding: 0; }
+        .med-item { 
+            background-color: #F0F7FF; 
+            border-left: 5px solid #004085; 
+            padding: 15px; 
+            margin-bottom: 15px; 
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .med-date { font-weight: bold; color: #004085; margin-right: 10px; }
+        .med-status.taken { color: #28A745; font-weight: bold; }
+        .med-status.skipped { color: #DC3545; font-weight: bold; }
+        
+        .delete-btn {
+            background-color: transparent;
+            border: 1px solid #ffcccc;
+            color: #cc0000;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-left: 15px;
+        }
+        .delete-btn:hover { background-color: #cc0000; color: white; }
+    </style>
+</head>
+<body>
+    <header class="sub-header">
+        <h1>💊 İlaç Takibi ve Tedaviye Uyum</h1>
+    </header>
+    <main class="medication-container">
+        <!-- İlaç Takip Formu -->
+        <div class="section-card">
+            <h2>Günlük İlaç Alımını Kaydet</h2>
+            <form id="medicationLogForm" action="/api/logs/medication" method="POST">
+                <div class="form-group">
+                    <label for="logDate">Kaydın Tutulduğu Gün</label>
+                    <input type="date" id="logDate" name="logDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="medicationName">İlacın Adı</label>
+                    <input type="text" id="medicationName" name="medicationName" placeholder="Örn: Betaferon" required>
+                </div>
+                <div class="form-group">
+                    <label for="dosage">Dozaj Bilgisi</label>
+                    <input type="text" id="dosage" name="dosage" placeholder="Örn: 10mg" required>
+                </div>
+                <div class="form-group">
+                    <label for="status">Durum</label>
+                    <select id="status" name="status" required>
+                        <option value="">Lütfen Seçiniz...</option>
+                        <option value="Taken">Alındı</option>
+                        <option value="Skipped">Atlandı</option>
+                    </select>
+                </div>
+                <button type="submit" class="submit-button">Günlük Durumu Kaydet</button>
+                <div id="formMessage"></div>
+            </form>
+        </div>
+
+        <div class="section-card">
+            <h2>Geçmiş İlaç Kayıtları</h2>
+            <div id="loadingMessage">Yükleniyor...</div>
+            <ul id="medList" class="med-list"></ul>
+        </div>
+
+        <div class="back-btn-container">
+            <a href="dashboard.html" class="back-btn">← Ana Menüye Dön</a>
+        </div>
+
+    </main>
+    <footer>
+        <p>© 2025 Akıllı MS Takip ve Analiz Sistemi</p>
+    </footer>
+
+    <script>
+        // SAYFA YÜKLENDİĞİNDE KAYITLARI GETİRME
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('token');
+            if (!token) { alert('Lütfen önce giriş yapın.'); window.location.href = 'login.html'; return; }
+            document.getElementById('logDate').valueAsDate = new Date();
+            loadMedications(); // Listeyi getir
+        });
+
+        // LİSTELEME FONKSİYONU
+        async function loadMedications() {
+            const token = localStorage.getItem('token');
+            const listElement = document.getElementById('medList');
+            const loadingElement = document.getElementById('loadingMessage');
+
+            try {
+                const response = await fetch('/api/logs/medications', {
+                    method: 'GET',
+                    headers: { 'x-auth-token': token }
+                });
+                
+                const meds = await response.json();
+                loadingElement.style.display = 'none';
+                listElement.innerHTML = '';
+
+                if (meds.length === 0) {
+                    listElement.innerHTML = '<p style="color:#666; text-align:center;">Henüz kayıt yok.</p>';
+                    return;
+                }
+
+                meds.forEach(med => {
+                    const dateStr = new Date(med.logDate).toLocaleDateString('tr-TR');
+                    const statusText = med.status === 'Taken' ? 'Alındı' : 'Atlandı';
+                    const statusClass = med.status === 'Taken' ? 'taken' : 'skipped';
+
+                    const li = document.createElement('li');
+                    li.className = 'med-item';
+                    li.innerHTML = `
+                        <div>
+                            <span class="med-date">📅 ${dateStr}</span>
+                            <strong>${med.medicationName}</strong> (${med.dosage})
+                            - <span class="med-status ${statusClass}">${statusText}</span>
+                        </div>
+                        <button class="delete-btn" onclick="deleteMed('${med._id}')">🗑️ Sil</button>
+                    `;
+                    listElement.appendChild(li);
+                });
+            } catch (error) {
+                loadingElement.textContent = 'Hata oluştu.';
+            }
+        }
+
+        // SİLME FONKSİYONU
+        async function deleteMed(id) {
+            if (!confirm('Bu kaydı silmek istiyor musunuz?')) return;
+            const token = localStorage.getItem('token');
+            try {
+                const response = await fetch(`/api/logs/medication/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'x-auth-token': token }
+                });
+                if (response.ok) loadMedications(); // Listeyi yenile
+            } catch (error) {
+                alert('Silinemedi.');
+            }
+        }
+
+        // KAYIT FORMU
+        const medicationLogForm = document.getElementById('medicationLogForm');
+        const formMessage = document.getElementById('formMessage');
+
+        medicationLogForm.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            formMessage.style.display = 'none';
+            const token = localStorage.getItem('token');
+            const formData = {
+                logDate: document.getElementById('logDate').value,
+                medicationName: document.getElementById('medicationName').value,
+                dosage: document.getElementById('dosage').value,
+                status: document.getElementById('status').value
+            };
+            try {
+                const response = await fetch('/api/logs/medication', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-auth-token': token },
+                    body: JSON.stringify(formData)
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    formMessage.textContent = 'İlaç kaydı başarıyla eklendi.';
+                    formMessage.className = 'success';
+                    formMessage.style.display = 'block';
+                    medicationLogForm.reset();
+                    document.getElementById('logDate').valueAsDate = new Date();
+                    loadMedications(); // LİSTEYİ YENİLE
+                } else {
+                    formMessage.textContent = 'Hata: ' + data.message;
+                    formMessage.className = 'error';
+                    formMessage.style.display = 'block';
+                }
+            } catch (error) {
+                formMessage.textContent = 'Sunucu hatası.';
+                formMessage.className = 'error';
+                formMessage.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

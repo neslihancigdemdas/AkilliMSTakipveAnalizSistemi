@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Randevu Takibi - Akıllı MS Takip</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Mevcut Stiller */
+        .appointment-container { max-width: 800px; margin: 40px auto; padding: 20px; }
+        .section-card { background-color: #FFFFFF; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        .section-card h2 { color: #CC0000; border-bottom: 2px solid #FFEDED; padding-bottom: 10px; margin-top: 0; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: bold; color: #455A64; }
+        .form-group input[type="text"], .form-group input[type="datetime-local"], .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        .submit-button { background-color: #CC0000; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; transition: background-color 0.3s; font-weight: bold; }
+        .submit-button:hover { background-color: #990000; }
+        #formMessage { margin-top: 15px; padding: 10px; border-radius: 5px; display: none; }
+        .success { background-color: #D4EDDA; color: #155724; }
+        .error { background-color: #F8D7DA; color: #721C24; }
+        .back-btn-container { text-align: center; margin-top: 30px; }
+        .back-btn { display: inline-block; padding: 10px 25px; background-color: #6C757D; color: white; text-decoration: none; border-radius: 20px; font-weight: bold; transition: background-color 0.3s; }
+        .back-btn:hover { background-color: #5a6268; }
+
+        /* LİSTE VE SİLME BUTONU STİLLERİ */
+        .appointment-list { list-style: none; padding: 0; }
+        .appointment-item { 
+            background-color: #FFF5F5; 
+            border-left: 5px solid #CC0000; 
+            padding: 15px; 
+            margin-bottom: 15px; 
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between; 
+            align-items: center;
+            position: relative;
+        }
+        .app-date { font-weight: bold; color: #CC0000; font-size: 1.1em; display: block; margin-bottom: 5px; }
+        .app-doctor { font-weight: bold; color: #333; }
+        .app-clinic { color: #666; font-size: 0.9em; }
+        .app-notes { margin-top: 5px; font-style: italic; color: #555; font-size: 0.9em; }
+        
+        /* Silme Butonu */
+        .delete-btn {
+            background-color: transparent;
+            border: 1px solid #ffcccc;
+            color: #cc0000;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-left: 15px;
+            transition: all 0.2s;
+        }
+        .delete-btn:hover {
+            background-color: #cc0000;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <header class="sub-header">
+        <h1>📅 Doktor Randevularınız</h1>
+    </header>
+    <main class="appointment-container">
+        <!-- Randevu Kayıt Formu -->
+        <div class="section-card">
+            <h2>Yeni Randevu Kaydı Oluştur</h2>
+            <form id="appointmentForm" action="/api/logs/appointment" method="POST">
+                <div class="form-group">
+                    <label for="appointmentDate">Randevu Tarihi ve Saati</label>
+                    <input type="datetime-local" id="appointmentDate" name="appointmentDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="doctorName">Doktorun Adı Soyadı</label>
+                    <input type="text" id="doctorName" name="doctorName" placeholder="Örn: Uzm. Dr. Ayşe Yılmaz" required>
+                </div>
+                <div class="form-group">
+                    <label for="hospitalClinic">Hastane / Klinik Adı</label>
+                    <input type="text" id="hospitalClinic" name="hospitalClinic" placeholder="Örn: Şehir Hastanesi Nöroloji Polikliniği" required>
+                </div>
+                <div class="form-group">
+                    <label for="notes">Randevu Öncesi Notlarınız</label>
+                    <textarea id="notes" name="notes" rows="4" placeholder="Doktora sormak istedikleriniz..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="reminderSet">Hatırlatmayı Ayarla</label>
+                    <select id="reminderSet" name="reminderSet" required>
+                        <option value="true">Evet, randevudan 1 gün önce hatırlat</option>
+                        <option value="false" selected>Hayır, hatırlatmaya gerek yok</option>
+                    </select>
+                </div>
+                <button type="submit" class="submit-button">Randevuyu Kaydet</button>
+            </form>
+            <div id="formMessage"></div>
+        </div>
+
+        <div class="section-card">
+            <h2>Kayıtlı Randevularım</h2>
+            <div id="loadingMessage">Yükleniyor...</div>
+            <ul id="appointmentList" class="appointment-list">
+                </ul>
+        </div>
+
+        <div class="back-btn-container">
+            <a href="dashboard.html" class="back-btn">← Ana Menüye Dön</a>
+        </div>
+
+    </main>
+    <footer>
+        <p>© 2025 Akıllı MS Takip ve Analiz Sistemi</p>
+    </footer>
+  
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('token');
+            if (!token) { alert('Lütfen önce giriş yapın.'); window.location.href = 'login.html'; return; }
+            loadAppointments();
+        });
+
+        // Randevuları Listeleme Fonksiyonu
+        async function loadAppointments() {
+            const token = localStorage.getItem('token');
+            const listElement = document.getElementById('appointmentList');
+            const loadingElement = document.getElementById('loadingMessage');
+
+            try {
+                const response = await fetch('/api/logs/appointments', {
+                    method: 'GET',
+                    headers: { 'x-auth-token': token }
+                });
+                
+                const appointments = await response.json();
+                loadingElement.style.display = 'none';
+                listElement.innerHTML = ''; 
+
+                if (appointments.length === 0) {
+                    listElement.innerHTML = '<p style="color:#666; text-align:center;">Henüz kayıtlı randevunuz yok.</p>';
+                    return;
+                }
+
+                appointments.forEach(app => {
+                    const dateObj = new Date(app.appointmentDate);
+                    const dateStr = dateObj.toLocaleDateString('tr-TR') + ' ' + dateObj.toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'});
+                    
+                    const li = document.createElement('li');
+                    li.className = 'appointment-item';
+                    // ID'yi fonksiyona göndermek için app._id kullanılıyor
+                    li.innerHTML = `
+                        <div>
+                            <span class="app-date">📅 ${dateStr}</span>
+                            <span class="app-doctor">👨‍⚕️ ${app.doctorName}</span>
+                            <div class="app-clinic">🏥 ${app.hospitalClinic || 'Belirtilmedi'}</div>
+                            ${app.notes ? `<div class="app-notes">📝 "${app.notes}"</div>` : ''}
+                        </div>
+                        <div style="text-align:right;">
+                            ${app.reminderSet ? '<span style="font-size:1.2em; margin-right:10px;" title="Hatırlatıcı Açık">🔔</span>' : ''}
+                            <button class="delete-btn" onclick="deleteAppointment('${app._id}')">🗑️ Sil</button>
+                        </div>
+                    `;
+                    listElement.appendChild(li);
+                });
+
+            } catch (error) {
+                console.error('Liste hatası:', error);
+                loadingElement.textContent = 'Randevular yüklenirken hata oluştu.';
+            }
+        }
+
+        // --- RANDEVU SİLME FONKSİYONU ---
+        async function deleteAppointment(id) {
+            if (!confirm('Bu randevuyu silmek istediğinize emin misiniz?')) {
+                return;
+            }
+
+            const token = localStorage.getItem('token');
+            try {
+                const response = await fetch(`/api/logs/appointment/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'x-auth-token': token }
+                });
+
+                if (response.ok) {
+                    // Başarıyla silindiyse listeyi yenile
+                    loadAppointments();
+                } else {
+                    alert('Silme işlemi başarısız oldu.');
+                }
+            } catch (error) {
+                console.error('Silme hatası:', error);
+                alert('Sunucuya bağlanılamadı.');
+            }
+        }
+
+        // Kayıt Formu 
+        const appointmentForm = document.getElementById('appointmentForm');
+        const formMessage = document.getElementById('formMessage');
+
+        appointmentForm.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            formMessage.style.display = 'none';
+            const token = localStorage.getItem('token');
+            const formData = {
+                appointmentDate: document.getElementById('appointmentDate').value,
+                doctorName: document.getElementById('doctorName').value,
+                hospitalClinic: document.getElementById('hospitalClinic').value,
+                notes: document.getElementById('notes').value,
+                reminderSet: document.getElementById('reminderSet').value
+            };
+            try {
+                const response = await fetch('/api/logs/appointment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-auth-token': token },
+                    body: JSON.stringify(formData)
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    formMessage.textContent = 'Randevu başarıyla kaydedildi.';
+                    formMessage.className = 'success';
+                    formMessage.style.display = 'block';
+                    appointmentForm.reset();
+                    loadAppointments(); // Listeyi yenile
+                } else {
+                    formMessage.textContent = 'Hata: ' + data.message;
+                    formMessage.className = 'error';
+                    formMessage.style.display = 'block';
+                }
+            } catch (error) {
+                formMessage.textContent = 'Sunucuya bağlanırken bir hata oluştu.';
+                formMessage.className = 'error';
+                formMessage.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

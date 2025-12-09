@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kayıt Ol - Akıllı MS Takip</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Özel Stil -->
+    <style>
+        .auth-container { max-width: 500px; margin: 50px auto; padding: 30px; background-color: #FFFFFF; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); }
+        .auth-container h1 { color: #2E8B57; text-align: center; margin-bottom: 30px; border-bottom: 2px solid #D4EDDA; padding-bottom: 10px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: bold; color: #455A64; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 1em; }
+        .form-group input[type="submit"] { background-color: #2D6A4F; color: white; border: none; cursor: pointer; transition: background-color 0.3s; font-weight: bold; margin-top: 10px; }
+        .form-group input[type="submit"]:hover { background-color: #1E4F39; }
+        .login-link { text-align: center; margin-top: 20px; font-size: 0.9em; }
+        #errorMessage { color: red; text-align: center; margin-top: 10px; display: none; }
+    </style>
+</head>
+<body>
+    <header class="sub-header">
+        <h1>Yeni Hesap Oluştur</h1>
+    </header>
+    <main>
+        <div class="auth-container">
+            <h1>Kişisel Profil Bilgileri</h1>
+            <!-- Kayıt Formu -->
+            <form id="signupForm" action="/api/auth/signup" method="POST">
+                
+                <div class="form-group">
+                    <label for="firstName">Adınız</label>
+                    <input type="text" id="firstName" name="firstName" required>
+                </div>
+                <div class="form-group">
+                    <label for="lastName">Soyadınız</label>
+                    <input type="text" id="lastName" name="lastName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">E-posta Adresi</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Şifre</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="msType">MS Hastalığının Tipi</label>
+                    <select id="msType" name="msType" required>
+                        <option value="">Lütfen Seçiniz</option>
+                        <option value="RRMS">Ataklı-İyileşmeli (RRMS)</option>
+                        <option value="SPMS">İkincil İlerleyici (SPMS)</option>
+                        <option value="PPMS">Birincil İlerleyici (PPMS)</option>
+                        <option value="CIS">Klinik İzole Sendrom (CIS)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="diagnosisYear">Tanı Aldığınız Yıl</label>
+                    <input type="number" id="diagnosisYear" name="diagnosisYear" placeholder="Örn: 2018" min="1900" max="2025" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="gender">Cinsiyet</label>
+                    <select id="gender" name="gender" required>
+                        <option value="">Lütfen Seçiniz</option>
+                        <option value="Kadın">Kadın</option>
+                        <option value="Erkek">Erkek</option>
+                        <option value="Diğer">Diğer</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="ageGroup">Yaş Grubu</label>
+                    <select id="ageGroup" name="ageGroup" required>
+                        <option value="">Lütfen Seçiniz</option>
+                        <option value="18-30">18 - 30</option>
+                        <option value="31-45">31 - 45</option>
+                        <option value="46-60">46 - 60</option>
+                        <option value="60+">60+</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <input type="submit" value="Hesap Oluştur">
+                </div>
+            </form>
+
+            <div id="errorMessage"></div>
+
+            <div class="login-link">
+                Zaten bir hesabınız var mı? <a href="login.html">Giriş Yapın</a>
+            </div>
+        </div>
+    </main>
+    <footer>
+        <p>© 2025 Akıllı MS Takip ve Analiz Sistemi</p>
+    </footer>
+
+    <script>
+        const signupForm = document.getElementById('signupForm');
+        const errorMessage = document.getElementById('errorMessage');
+
+        signupForm.addEventListener('submit', async function(event) {
+            // Formun normal gönderimini engelle
+            event.preventDefault();
+            errorMessage.style.display = 'none';
+
+            // Form verilerini bir obje olarak topla
+            const formData = {
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value,
+                msType: document.getElementById('msType').value,
+                diagnosisYear: document.getElementById('diagnosisYear').value,
+                gender: document.getElementById('gender').value,
+                ageGroup: document.getElementById('ageGroup').value
+            };
+
+            try {
+                // Veriyi sunucuya (fetch) gönder
+                const response = await fetch('/api/auth/signup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Başarılı kayıt
+                    alert('Kayıt başarıyla tamamlandı! Lütfen giriş yapın.');
+                    
+                    // Kullanıcıyı GİRİŞ sayfasına yönlendir
+                    window.location.href = 'login.html';
+                } else {
+                    // Başarısız kayıt (Örn: E-posta zaten var)
+                    errorMessage.textContent = 'Hata: ' + data.message;
+                    errorMessage.style.display = 'block';
+                }
+
+            } catch (error) {
+                console.error('Kayıt sırasında bir hata oluştu:', error);
+                errorMessage.textContent = 'Sunucuya bağlanırken bir hata oluştu.';
+                errorMessage.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

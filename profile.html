@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil Ayarları - Akıllı MS Takip</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .profile-container { max-width: 600px; margin: 40px auto; padding: 20px; }
+        .section-card { background-color: #FFFFFF; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .section-card h2 { color: #2D6A4F; border-bottom: 2px solid #D4EDDA; padding-bottom: 10px; margin-top: 0; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: bold; color: #455A64; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        .submit-button { background-color: #004085; color: white; border: none; padding: 12px 25px; border-radius: 8px; font-size: 1.1em; cursor: pointer; transition: background-color 0.3s; width: 100%; }
+        .submit-button:hover { background-color: #002D59; }
+        #formMessage { margin-top: 15px; padding: 10px; border-radius: 5px; display: none; text-align: center; }
+        .success { background-color: #D4EDDA; color: #155724; }
+        .error { background-color: #F8D7DA; color: #721C24; }
+        .back-btn-container { text-align: center; margin-top: 30px; }
+        .back-btn { display: inline-block; padding: 10px 25px; background-color: #6C757D; color: white; text-decoration: none; border-radius: 20px; font-weight: bold; transition: background-color 0.3s; }
+        .back-btn:hover { background-color: #5a6268; }
+    </style>
+</head>
+<body>
+    <header class="sub-header">
+        <h1>⚙️ Profil Ayarları</h1>
+    </header>
+    <main class="profile-container">
+        <!-- Profil Güncelleme Formu -->
+        <div class="section-card">
+            <h2>Bilgilerimi Güncelle</h2>
+            <form id="profileForm">
+                <div class="form-group">
+                    <label for="firstName">Ad</label>
+                    <input type="text" id="firstName" required>
+                </div>
+                <div class="form-group">
+                    <label for="lastName">Soyad</label>
+                    <input type="text" id="lastName" required>
+                </div>
+                <div class="form-group">
+                    <label for="msType">MS Tipi</label>
+                    <select id="msType" required>
+                        <option value="RRMS">Ataklı-İyileşmeli (RRMS)</option>
+                        <option value="SPMS">İkincil İlerleyici (SPMS)</option>
+                        <option value="PPMS">Birincil İlerleyici (PPMS)</option>
+                        <option value="CIS">Klinik İzole Sendrom (CIS)</option>
+                    </select>
+                </div>
+                
+                <hr style="margin: 30px 0; border: 0; border-top: 1px solid #eee;">
+                
+                <div class="form-group">
+                    <label for="password">Yeni Şifre (Değiştirmek İstemiyorsanız Boş Bırakın)</label>
+                    <input type="password" id="password" placeholder="********">
+                </div>
+
+                <button type="submit" class="submit-button">Değişiklikleri Kaydet</button>
+            </form>
+            <div id="formMessage"></div>
+        </div>
+
+        <div class="back-btn-container">
+            <a href="dashboard.html" class="back-btn">← Ana Menüye Dön</a>
+        </div>
+
+    </main>
+    <footer>
+        <p>© 2025 Akıllı MS Takip ve Analiz Sistemi</p>
+    </footer>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) { alert('Giriş yapmalısınız.'); window.location.href = 'login.html'; }
+
+        // Sayfa yüklenince mevcut bilgileri çek ve doldur
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('/api/auth/user', {
+                    headers: { 'x-auth-token': token }
+                });
+                const user = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('firstName').value = user.firstName;
+                    document.getElementById('lastName').value = user.lastName;
+                    document.getElementById('msType').value = user.msType;
+                }
+            } catch (error) { console.error('Hata:', error); }
+        });
+
+        // Güncelleme İşlemi
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const messageBox = document.getElementById('formMessage');
+            
+            const data = {
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                msType: document.getElementById('msType').value,
+                password: document.getElementById('password').value // Boşsa backend bunu görmezden gelir
+            };
+
+            // Şifre alanı boşsa objeden çıkar (güvenlik için)
+            if (!data.password) delete data.password;
+
+            try {
+                const response = await fetch('/api/auth/profile', {
+                    method: 'PUT',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'x-auth-token': token
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                messageBox.style.display = 'block';
+                messageBox.textContent = result.message;
+
+                if (response.ok) {
+                    messageBox.className = 'success';
+                    // İsmi localStorage'da da güncelle (Dashboard'da hemen değişsin diye)
+                    localStorage.setItem('firstName', data.firstName);
+                } else {
+                    messageBox.className = 'error';
+                }
+            } catch (error) {
+                messageBox.textContent = 'Sunucu hatası.';
+                messageBox.className = 'error';
+            }
+        });
+    </script>
+</body>
+</html>

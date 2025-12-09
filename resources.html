@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Destek Kaynakları - Akıllı MS Takip</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .resources-container { max-width: 1000px; margin: 40px auto; padding: 20px; }
+        .resource-section { margin-bottom: 40px; }
+        .resource-section h2 { color: #155724; border-bottom: 3px solid #D4EDDA; padding-bottom: 10px; margin-top: 0; }
+        
+        /* Ana Kart */
+        .main-card { background-color: #FFFFFF; border: 1px solid #E9ECEF; border-radius: 10px; padding: 30px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        .main-card h3 { color: #004085; font-size: 1.5em; margin-bottom: 15px; }
+        .primary-btn { display: inline-block; background-color: #004085; color: white; padding: 12px 30px; border-radius: 25px; text-decoration: none; font-weight: bold; font-size: 1.1em; transition: background-color 0.3s; }
+        .primary-btn:hover { background-color: #002D59; }
+
+        /* Genişletilmiş Şehir Grid */
+        .city-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); /* Otomatik sığdır */
+            gap: 12px;
+            margin-top: 25px;
+        }
+        .city-btn {
+            background-color: #F8F9FA;
+            color: #333;
+            padding: 12px 5px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95em;
+            border: 1px solid #DEE2E6;
+            transition: all 0.2s;
+            display: block;
+            text-align: center; /* Yazıyı ortala */
+        }
+        .city-btn:hover {
+            background-color: #004085;
+            color: white;
+            border-color: #004085;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Diğer Stiller */
+        .resource-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .resource-card { background-color: #E6F7FF; padding: 20px; border-radius: 8px; border-left: 5px solid #004085; display: flex; flex-direction: column; }
+        .contact-info { margin-top: auto; padding-top: 15px; border-top: 1px solid rgba(0,64,133,0.1); }
+        .back-btn-container { text-align: center; margin-top: 40px; }
+        .back-btn { display: inline-block; padding: 10px 25px; background-color: #6C757D; color: white; text-decoration: none; border-radius: 20px; font-weight: bold; transition: background-color 0.3s; }
+        .back-btn:hover { background-color: #5a6268; }
+    </style>
+</head>
+<body>
+    <header class="sub-header">
+        <h1>🔗 Destek Kaynakları ve İletişim</h1>
+        <p>Sosyal destek ağlarına ve yerel derneklere kolayca ulaşın.</p>
+    </header>
+
+    <main class="resources-container">
+        
+        <div class="resource-section">
+            <h2>MS Dernekleri ve Yerel Temsilcilikler</h2>
+            <!--derneklerin butonları verildi -->
+            <div class="main-card">
+                <h3>Türkiye Geneli Dernek Ağı</h3>
+                <p>Size en yakın MS derneğine ulaşarak sosyal etkinliklere katılabilir ve dayanışma ağının bir parçası olabilirsiniz.</p>
+                
+                <a href="https://msguncel.com/" target="_blank" class="primary-btn">🌐 MS Güncel Platformu</a>
+
+                <p style="margin-top: 25px; font-size: 0.95em; color: #666; font-weight: bold;">Şehrinizdeki Derneği Bulun:</p>
+                
+                <div class="city-grid">
+                    <a href="https://www.google.com/search?q=İstanbul+MS+Derneği+İletişim" target="_blank" class="city-btn">İstanbul</a>
+                    <a href="https://www.google.com/search?q=Ankara+MS+Derneği+İletişim" target="_blank" class="city-btn">Ankara</a>
+                    <a href="https://www.google.com/search?q=İzmir+MS+Derneği+İletişim" target="_blank" class="city-btn">İzmir</a>
+                    <a href="https://www.google.com/search?q=Bursa+MS+Derneği+İletişim" target="_blank" class="city-btn">Bursa</a>
+                    <a href="https://www.google.com/search?q=Antalya+MS+Derneği+İletişim" target="_blank" class="city-btn">Antalya</a>
+                    <a href="https://www.google.com/search?q=Adana+MS+Derneği+İletişim" target="_blank" class="city-btn">Adana</a>
+                    <a href="https://www.google.com/search?q=Konya+MS+Derneği+İletişim" target="_blank" class="city-btn">Konya</a>
+                    <a href="https://www.google.com/search?q=Gaziantep+MS+Derneği+İletişim" target="_blank" class="city-btn">Gaziantep</a>
+                    <a href="https://www.google.com/search?q=Kayseri+MS+Derneği+İletişim" target="_blank" class="city-btn">Kayseri</a>
+                    <a href="https://www.google.com/search?q=Eskişehir+MS+Derneği+İletişim" target="_blank" class="city-btn">Eskişehir</a>
+                    <a href="https://www.google.com/search?q=Sakarya+MS+Derneği+İletişim" target="_blank" class="city-btn">Sakarya</a>
+                    <a href="https://www.google.com/search?q=Samsun+MS+Derneği+İletişim" target="_blank" class="city-btn">Samsun</a>
+                    <a href="https://www.google.com/search?q=Balıkesir+MS+Derneği+İletişim" target="_blank" class="city-btn">Balıkesir</a>
+                    <a href="https://www.google.com/search?q=Trabzon+MS+Derneği+İletişim" target="_blank" class="city-btn">Trabzon</a>
+                    <a href="https://www.google.com/search?q=Afyonkarahisar+MS+Derneği+İletişim" target="_blank" class="city-btn">Afyon</a>
+                    <a href="https://www.google.com/search?q=Bolu+MS+Derneği+İletişim" target="_blank" class="city-btn">Bolu</a>
+                    <a href="https://www.google.com/search?q=Zonguldak+MS+Derneği+İletişim" target="_blank" class="city-btn">Zonguldak</a>
+                    <a href="https://www.google.com/search?q=Kocaeli+MS+Derneği+İletişim" target="_blank" class="city-btn">Kocaeli</a>
+                    <a href="https://www.google.com/search?q=Hatay+MS+Derneği+İletişim" target="_blank" class="city-btn">Hatay</a>
+                    <a href="https://www.google.com/search?q=Malatya+MS+Derneği+İletişim" target="_blank" class="city-btn">Malatya</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="resource-section">
+            <!-- Psikolojik Destek Kaynakları -->
+            <h2>Psikolojik Destek</h2>
+            <div class="resource-grid">
+                <div class="resource-card" style="background-color: #FFF3CD; border-left-color: #FFC107;">
+                    <h3 style="color: #856404;">📞 Ücretsiz Devlet Desteği</h3>
+                    <p>Aile ve Sosyal Hizmetler Bakanlığı'nın 7/24 ücretsiz hattı.</p>
+                    <div class="contact-info">
+                        <p><strong>Hat:</strong> <a href="tel:183" style="color: #856404; font-size: 1.2em;">ALO 183 Sosyal Destek</a></p>
+                    </div>
+                </div>
+                
+                <div class="resource-card">
+                    <h3>Hiwell Online Terapi</h3>
+                    <p>Evden çıkmadan uzman psikologlarla görüntülü görüşme imkanı.</p>
+                    <div class="contact-info">
+                        <p><strong>Web:</strong> <a href="https://www.hiwellapp.com" target="_blank">www.hiwellapp.com</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="back-btn-container">
+            <a href="dashboard.html" class="back-btn">← Ana Menüye Dön</a>
+        </div>
+        
+    </main>
+
+    <footer>
+        <p>© 2025 Akıllı MS Takip ve Analiz Sistemi | Sağlık Farkındalığı için geliştirildi</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analiz Raporları - Akıllı MS Takip</title>
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- KÜTÜPHANE BAĞLANTILARI -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+    <!-- Stil tanımları-->
+    <style>
+        .reports-container { max-width: 1000px; margin: 40px auto; padding: 20px; }
+        .report-card { background-color: #FFFFFF; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        .report-card h2 { color: #2D6A4F; border-bottom: 2px solid #D4EDDA; padding-bottom: 10px; margin-top: 0; margin-bottom: 20px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px; }
+        .stat-box { background-color: #F8F9FA; padding: 20px; border-radius: 8px; text-align: center; border: 1px solid #E9ECEF; }
+        .stat-number { font-size: 2.5em; font-weight: bold; color: #004085; display: block; }
+        .stat-label { color: #6C757D; font-size: 0.9em; text-transform: uppercase; letter-spacing: 1px; }
+        .insight-box { background-color: #FFF3CD; color: #856404; padding: 15px; border-radius: 6px; border-left: 5px solid #FFC107; margin-top: 15px; font-weight: bold; }
+        .highlight { color: #CC0000; }
+
+        .chart-container { position: relative; height: 400px; width: 100%; margin-top: 20px; display: flex; justify-content: center; align-items: center; }
+        #medicationChart { max-height: 300px; max-width: 300px; }
+
+        .button-group { text-align: center; margin-top: 30px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+        .back-btn { display: inline-block; padding: 12px 25px; background-color: #6C757D; color: white; text-decoration: none; border-radius: 20px; font-weight: bold; transition: background-color 0.3s; border: none; cursor: pointer; }
+        .back-btn:hover { background-color: #5a6268; }
+        .pdf-btn { display: inline-block; padding: 12px 25px; background-color: #DC3545; color: white; text-decoration: none; border-radius: 20px; font-weight: bold; transition: background-color 0.3s; border: none; cursor: pointer; }
+        .pdf-btn:hover { background-color: #bb2d3b; }
+        .excel-btn { display: inline-block; padding: 12px 25px; background-color: #198754; color: white; text-decoration: none; border-radius: 20px; font-weight: bold; transition: background-color 0.3s; border: none; cursor: pointer; }
+        .excel-btn:hover { background-color: #157347; }
+    </style>
+</head>
+<body>
+    <header class="sub-header">
+        
+        <h1>📈 Kişisel Analiz Raporları</h1>
+        <p>Verileriniz işleniyor: Kendi vücut dilinizi derinlemesine öğrenin.</p>
+    </header>
+    
+    <main class="reports-container" id="reportContent">
+        <!-- Kullanıcı Bilgileri ve Genel Bakış -->
+        <div class="report-card">
+            <h2>Merhaba, <span id="userNameDisplay">...</span></h2>
+            <p>MS Tipiniz: <strong id="msTypeDisplay">-</strong> | Analiz edilen son kayıt sayısı: <strong id="totalLogsDisplay">0</strong></p>
+        </div>
+
+        <div class="report-card">
+            <h2>1. Semptom ve Stres Analizi (Son 30 Gün)</h2>
+            <div class="stats-grid">
+                <div class="stat-box"><span class="stat-number" id="avgFatigue">0</span><span class="stat-label">Ort. Yorgunluk (1-10)</span></div>
+                <div class="stat-box"><span class="stat-number" id="highStressDays">0</span><span class="stat-label">Yüksek Stresli Gün</span></div>
+                <div class="stat-box"><span class="stat-number" id="highPainDays">0</span><span class="stat-label">Şiddetli Ağrı/Atak Riski</span></div>
+            </div>
+            <div class="chart-container"><canvas id="fatigueChart"></canvas></div>
+            <div class="insight-box" id="stressInsightBox" style="display: none;">
+                💡 <strong>Kişisel Öngörü:</strong> Stres seviyenizin yüksek olduğu günlerde, yorgunluk ortalamanız <span id="stressFatigueVal" class="highlight">0</span> seviyesine çıkıyor.
+            </div>
+        </div>
+        
+        <div class="report-card">
+            <h2>2. İlaç Tedavisi Uyumu</h2>
+            <div style="text-align: center; margin: 20px 0;">
+                <span class="stat-number" id="adherenceRate" style="color: #28A745;">%0</span>
+                <span class="stat-label">İlaç Alım Oranı</span>
+            </div>
+            <div class="chart-container"><canvas id="medicationChart"></canvas></div>
+            <div class="insight-box" style="background-color: #E6F7FF; border-left: 5px solid #004085; color: #004085;">
+                ℹ️ Tedavi uyumunuzu %80'in üzerinde tutmak, atak riskini azaltmak için kritiktir.
+            </div>
+        </div>
+    </main>
+     
+    <div class="button-group">
+        <a href="dashboard.html" class="back-btn">← Ana Menüye Dön</a>
+        <button onclick="downloadPDF()" class="pdf-btn">📄 PDF İndir</button>
+        <button onclick="downloadExcel()" class="excel-btn">📊 Excel İndir</button>
+    </div>
+
+    <footer><p>© 2025 Akıllı MS Takip ve Analiz Sistemi</p></footer>
+
+    <script>
+        let globalRawData = {};
+
+        // VERİ ÇEKME
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = localStorage.getItem('token');
+            if (!token) { alert('Lütfen önce giriş yapın.'); window.location.href = 'login.html'; return; }
+
+            try {
+                const response = await fetch('/api/analysis/reports', {
+                    method: 'GET',
+                    headers: { 'x-auth-token': token }
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    globalRawData = data.rawData; // Veriyi sakla
+
+                    document.getElementById('userNameDisplay').textContent = data.userName;
+                    document.getElementById('msTypeDisplay').textContent = data.msType;
+                    document.getElementById('totalLogsDisplay').textContent = data.totalLogs;
+                    document.getElementById('avgFatigue').textContent = data.analysis.avgFatigue;
+                    document.getElementById('highStressDays').textContent = data.analysis.highStressDays;
+                    document.getElementById('highPainDays').textContent = data.analysis.highPainDays;
+                    
+                    const adRate = data.analysis.adherenceRate;
+                    document.getElementById('adherenceRate').textContent = `%${adRate}`;
+                    
+                    if (parseFloat(data.analysis.avgFatigueUnderStress) > parseFloat(data.analysis.avgFatigue)) {
+                        document.getElementById('stressInsightBox').style.display = 'block';
+                        document.getElementById('stressFatigueVal').textContent = data.analysis.avgFatigueUnderStress;
+                    }
+                    renderCharts(data.charts);
+                }
+            } catch (error) { console.error('Bağlantı hatası:', error); }
+        });
+
+        // --- EXCEL İNDİRME FONKSİYONU  ---
+        function downloadExcel() {
+            if (!globalRawData.symptoms || globalRawData.symptoms.length === 0) {
+                alert("İndirilecek veri bulunamadı.");
+                return;
+            }
+
+            // Çeviri Sözlüğü (Mapping)
+            const translations = {
+                // Duygudurum
+                "Neutral": "Nötr",
+                "Anxious": "Kaygılı",
+                "Depressed": "Depresif",
+                "Happy": "Mutlu",
+                "Irritable": "Sinirli",
+                // Sıcaklık Etkisi
+                "None": "Etkilemedi",
+                "Slightly": "Hafif Etkiledi",
+                "Significantly": "Şiddetli Etkiledi",
+                // İlaç Durumu
+                "Taken": "Alındı",
+                "Skipped": "Atlandı"
+            };
+
+            // Çeviri Fonksiyonu
+            const translate = (text) => translations[text] || text;
+
+            // 1. Semptom Verilerini Hazırla (Türkçeleştirerek)
+            const symptomRows = globalRawData.symptoms.map(log => ({
+                Tarih: new Date(log.logDate).toLocaleDateString('tr-TR'),
+                Yorgunluk: log.fatigueScore,
+                Stres: log.stressLevel,
+                Duygudurum: translate(log.moodStatus), // Çeviri yapıldı
+                Sıcaklık_Etkisi: translate(log.temperatureInfluence) // Çeviri yapıldı
+            }));
+
+            // 2. İlaç Verilerini Hazırla (Türkçeleştirerek)
+            const medRows = globalRawData.medications.map(log => ({
+                Tarih: new Date(log.logDate).toLocaleDateString('tr-TR'),
+                İlaç_Adı: log.medicationName,
+                Doz: log.dosage,
+                Durum: translate(log.status) // Çeviri yapıldı (Taken -> Alındı)
+            }));
+
+            // 3. Excel Oluştur
+            const workbook = XLSX.utils.book_new();
+            const symptomSheet = XLSX.utils.json_to_sheet(symptomRows);
+            XLSX.utils.book_append_sheet(workbook, symptomSheet, "Semptomlar");
+
+            if (medRows.length > 0) {
+                const medSheet = XLSX.utils.json_to_sheet(medRows);
+                XLSX.utils.book_append_sheet(workbook, medSheet, "İlaçlar");
+            }
+
+            XLSX.writeFile(workbook, "MS_Takip_Verileri.xlsx");
+        }
+
+        // PDF FONKSİYONU
+        function downloadPDF() {
+            window.scrollTo(0, 0);
+            const element = document.getElementById('reportContent');
+            const btn = document.querySelector('.pdf-btn');
+            const originalText = btn.textContent;
+            btn.textContent = "Hazırlanıyor...";
+            btn.disabled = true;
+
+            const opt = {
+                margin: [10, 10, 10, 10],
+                filename: 'MS_Analiz_Raporu.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] } 
+            };
+            
+            html2pdf().set(opt).from(element).save().then(() => {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            });
+        }
+
+        // GRAFİK FONKSİYONU
+        function renderCharts(chartData) {
+            if (typeof Chart === 'undefined') return;
+            const commonOptions = { responsive: true, maintainAspectRatio: false, animation: { duration: 0 }, hover: { mode: null } };
+
+            const ctx1 = document.getElementById('fatigueChart').getContext('2d');
+            new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: chartData.fatigueDates,
+                    datasets: [{
+                        label: 'Yorgunluk Seviyesi (1-10)',
+                        data: chartData.fatigueScores,
+                        borderColor: '#2D6A4F',
+                        backgroundColor: 'rgba(45, 106, 79, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: { ...commonOptions, scales: { y: { beginAtZero: true, max: 10 } } }
+            });
+
+            const totalMeds = chartData.medicationCounts[0] + chartData.medicationCounts[1];
+            if (totalMeds > 0) {
+                const ctx2 = document.getElementById('medicationChart').getContext('2d');
+                new Chart(ctx2, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Alındı', 'Atlandı'],
+                        datasets: [{ data: chartData.medicationCounts, backgroundColor: ['#28A745', '#DC3545'] }]
+                    },
+                    options: commonOptions
+                });
+            } else {
+                document.getElementById('medicationChart').parentElement.innerHTML = '<p style="text-align:center;">Veri yok.</p>';
+            }
+        }
+    </script>
+</body>
+</html>

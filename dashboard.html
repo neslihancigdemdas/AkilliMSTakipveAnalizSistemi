@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kontrol Paneli - Akıllı MS Takip</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Dashboard Ana Kap */
+        .dashboard-container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        /*Karşılama/Misyon Yazısı Kutusu */
+        .dashboard-intro {
+            background-color: #EAF7E8; 
+            border-left: 5px solid #2D6A4F; 
+            padding: 20px 25px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            color: #2F4F4F;
+            font-size: 1.05em;
+            line-height: 1.6;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        /* Kartların Izgara Yapısı (Grid) */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        /* Tekil Kart Stili */
+        .menu-card {
+            background-color: #FFFFFF;
+            border-radius: 15px;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            border: 1px solid #E9ECEF;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+        }
+
+        .menu-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-color: #D4EDDA;
+        }
+
+        .card-icon { font-size: 3em; margin-bottom: 15px; display: block; }
+        .card-title { font-size: 1.2em; font-weight: bold; color: #2D6A4F; margin: 0; }
+        .card-desc { font-size: 0.9em; color: #6C757D; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <header class="sub-header">
+        <h1 id="welcomeMessage">Hoş Geldiniz!</h1>
+        <p>MS takip asistanınız hazır. Bugün ne yapmak istersiniz?</p>
+    </header>
+
+    <main class="dashboard-container">
+        <!-- Hoş Geldiniz ve Misyon Metni -->
+        <div class="dashboard-intro">
+            <p>
+                Bir MS hastası olarak edindiğim deneyim ve gözlemler gösteriyor ki, MS ile yaşayan birçok kişi 
+                <strong>"vücudunun kişisel tetikleyicilerini ve erken uyarı sinyallerini yeterince tanımıyor"</strong>. 
+                Bu sistemin temel misyonu; kendi vücut dilinizi derinlemesine öğrenmenizi sağlamak, ataklara yol açan faktörleri 
+                önceden belirlemek ve böylece <strong>"atak sıklığını kalıcı olarak azaltarak"</strong> yaşam kalitenizi korumanıza destek olmaktır.
+            </p>
+        </div>
+
+        <div class="dashboard-grid">
+            
+            <a href="symptom_log.html" class="menu-card">
+                <span class="card-icon">📝</span>
+                <h3 class="card-title">Günlük Semptom Kaydı</h3>
+                <p class="card-desc">Yorgunluk, stres ve tetikleyicileri kaydet.</p>
+            </a>
+
+            <a href="medication.html" class="menu-card">
+                <span class="card-icon">💊</span>
+                <h3 class="card-title">İlaç Takibi</h3>
+                <p class="card-desc">Tedavi uyumunu ve ilaç alımlarını yönet.</p>
+            </a>
+
+            <a href="appointments.html" class="menu-card">
+                <span class="card-icon">📅</span>
+                <h3 class="card-title">Randevu Takvimi</h3>
+                <p class="card-desc">Doktor kontrollerini ve notlarını gör.</p>
+            </a>
+
+            <a href="reports.html" class="menu-card">
+                <span class="card-icon">📈</span>
+                <h3 class="card-title">Analiz Raporları</h3>
+                <p class="card-desc">Kişisel tetikleyicilerini ve grafiklerini incele.</p>
+            </a>
+
+            <a href="resources.html" class="menu-card">
+                <span class="card-icon">🔗</span>
+                <h3 class="card-title">Destek Kaynakları</h3>
+                <p class="card-desc">Psikolojik ve sosyal destek kanallarına ulaş.</p>
+            </a>
+
+            <a href="profile.html" class="menu-card">
+                <span class="card-icon">⚙️</span>
+                <h3 class="card-title">Profil Ayarları</h3>
+                <p class="card-desc">Şifre değiştirme ve üyelik bilgilerini güncelle.</p>
+            </a>
+            <a href="about.html" class="menu-card" style="border-color: #17A2B8;">
+                <span class="card-icon">ℹ️</span>
+                <h3 class="card-title" style="color: #138496;">Proje Künyesi</h3>
+                <p class="card-desc">Teknolojiler ve Metodoloji.</p>
+            </a>
+
+            <div class="menu-card" onclick="logout()" style="border-color: #DC3545;">
+                <span class="card-icon">🚪</span>
+                <h3 class="card-title" style="color: #DC3545;">Güvenli Çıkış</h3>
+                <p class="card-desc">Oturumu kapat ve ana sayfaya dön.</p>
+            </div>
+
+        </div>
+    </main>
+
+    <footer>
+        <p>© 2025 Akıllı MS Takip ve Analiz Sistemi</p>
+    </footer>
+
+    <script>
+        // Sayfa yüklendiğinde kullanıcı adını getir ve karşılama mesajını güncelle
+        document.addEventListener('DOMContentLoaded', () => {
+            const firstName = localStorage.getItem('firstName');
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                alert('Lütfen önce giriş yapın.');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            if (firstName) {
+                document.getElementById('welcomeMessage').textContent = `Hoş Geldin, ${firstName}!`;
+            }
+        });
+        
+        function logout() {
+            if (confirm("Çıkış yapmak istediğinize emin misiniz?")) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('firstName');
+                window.location.href = 'index.html'; 
+            }
+        }
+    </script>
+</body>
+</html>

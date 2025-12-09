@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Semptom Kaydı - Akıllı MS Takip</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Genel Stil Tanımları */
+        .form-container { max-width: 800px; margin: 40px auto; padding: 20px; }
+        .form-card { background-color: #FFFFFF; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        .form-card h2 { color: #2D6A4F; border-bottom: 2px solid #D4EDDA; padding-bottom: 10px; margin-top: 0; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: bold; color: #455A64; }
+        .form-group input[type="text"], .form-group input[type="date"], .form-group textarea, .form-group select, .form-group input[type="range"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        .score-slider-container { display: flex; align-items: center; }
+        .score-slider-container input[type="range"] { flex-grow: 1; margin-right: 15px; padding: 0; }
+        .score-value { font-weight: bold; color: #CC0000; }
+        .submit-button { background-color: #004085; color: white; border: none; padding: 12px 25px; border-radius: 8px; font-size: 1.1em; cursor: pointer; transition: background-color 0.3s; width: 100%; }
+        .submit-button:hover { background-color: #002D59; }
+        #formMessage { margin-top: 15px; padding: 10px; border-radius: 5px; display: none; }
+        .success { background-color: #D4EDDA; color: #155724; }
+        .error { background-color: #F8D7DA; color: #721C24; }
+        .back-btn-container { text-align: center; margin-top: 30px; }
+        .back-btn { display: inline-block; padding: 10px 25px; background-color: #6C757D; color: white; text-decoration: none; border-radius: 20px; font-weight: bold; transition: background-color 0.3s; }
+        .back-btn:hover { background-color: #5a6268; }
+
+        /* YENİ LİSTE STİLLERİ */
+        .log-list { list-style: none; padding: 0; }
+        .log-item { 
+            background-color: #F8F9FA; 
+            border-left: 5px solid #28A745; 
+            padding: 15px; 
+            margin-bottom: 15px; 
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .log-date { font-weight: bold; color: #28A745; margin-bottom: 5px; display: block; }
+        .log-details { font-size: 0.95em; color: #555; }
+        .delete-btn {
+            background-color: transparent;
+            border: 1px solid #ffcccc;
+            color: #cc0000;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-left: 10px;
+        }
+        .delete-btn:hover { background-color: #cc0000; color: white; }
+    </style>
+</head>
+<body>
+    <header class="sub-header">
+        <h1>📝 Günlük Semptom Kaydı</h1>
+    </header>
+    <main class="form-container">
+        
+        <div class="form-card">
+            <!-- Semptom Kayıt Formu -->
+            <h2>Semptom Durumu</h2>
+            <p>Kaydetmek istediğiniz tarihi ve durumu aşağıdan seçiniz.</p>
+            
+            <form id="symptomForm" action="/api/logs/symptom" method="POST">
+                <div class="form-group">
+                    <label for="logDate">Kayıt Tarihi</label>
+                    <input type="date" id="logDate" name="logDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="fatigueScore">1. Kronik Yorgunluk Şiddeti</label>
+                    <div class="score-slider-container">
+                        <input type="range" id="fatigueScore" name="fatigueScore" min="1" max="10" value="5" oninput="document.getElementById('fatigueValue').innerText = this.value">
+                        <span id="fatigueValue" class="score-value">5</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="stressLevel">2. Stres Seviyesi (Ana Tetikleyici)</label>
+                    <div class="score-slider-container">
+                        <input type="range" id="stressLevel" name="stressLevel" min="1" max="10" value="5" oninput="document.getElementById('stressValue').innerText = this.value">
+                        <span id="stressValue" class="score-value">5</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="moodStatus">3. Duygudurum</label>
+                    <select id="moodStatus" name="moodStatus" required>
+                        <option value="Neutral">Nötr</option>
+                        <option value="Anxious">Kaygılı</option>
+                        <option value="Depressed">Depresif</option>
+                        <option value="Happy">Mutlu</option>
+                        <option value="Irritable">Sinirli</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="temperatureInfluence">4. Sıcaklık Etkisi</label>
+                    <select id="temperatureInfluence" name="temperatureInfluence" required>
+                        <option value="None">Hayır, Etkilenmedim</option>
+                        <option value="Slightly">Evet, Hafifçe</option>
+                        <option value="Significantly">Evet, Önemli Ölçüde</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="restrictionNote">5. Kısıtlanma Notu (Opsiyonel)</label>
+                    <textarea id="restrictionNote" name="restrictionNote" rows="2" placeholder="Örn: Yürümede zorluk..."></textarea>
+                </div>
+                <div class="form-card" style="border: 1px solid #B3E0FF; padding: 20px;">
+                    <h3>Ek Semptomlar</h3>
+                    <div class="form-group">
+                        <label for="otherSymptomName">Semptom Adı</label>
+                        <input type="text" id="otherSymptomName" name="otherSymptomName" placeholder="Örn: Uyuşma">
+                    </div>
+                    <div class="form-group">
+                         <label for="otherSymptomSeverity">Şiddet (1-10)</label>
+                        <div class="score-slider-container">
+                            <input type="range" id="otherSymptomSeverity" name="otherSymptomSeverity" min="1" max="10" value="1" oninput="document.getElementById('otherSymptomValue').innerText = this.value">
+                            <span id="otherSymptomValue" class="score-value">1</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="submit-button">Günlüğü Kaydet</button>
+                </div>
+            </form>
+            <div id="formMessage"></div>
+        </div>
+
+        <div class="form-card">
+            <h2>Geçmiş Semptom Kayıtları</h2>
+            <div id="loadingMessage">Yükleniyor...</div>
+            <ul id="logList" class="log-list"></ul>
+        </div>
+
+        <div class="back-btn-container">
+            <a href="dashboard.html" class="back-btn">← Ana Menüye Dön</a>
+        </div>
+
+    </main>
+    <footer>
+        <p>© 2025 Akıllı MS Takip ve Analiz Sistemi</p>
+    </footer>
+    
+    <script>
+            // SAYFA YÜKLENDİĞİNDE
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('token');
+            if (!token) { alert('Lütfen önce giriş yapın.'); window.location.href = 'login.html'; return; }
+            document.getElementById('logDate').valueAsDate = new Date();
+            loadLogs(); 
+        });
+
+        // LİSTELEME FONKSİYONU
+        async function loadLogs() {
+            const token = localStorage.getItem('token');
+            const listElement = document.getElementById('logList');
+            const loadingElement = document.getElementById('loadingMessage');
+
+            try {
+                const response = await fetch('/api/logs/symptoms', {
+                    method: 'GET',
+                    headers: { 'x-auth-token': token }
+                });
+                
+                const logs = await response.json();
+                loadingElement.style.display = 'none';
+                listElement.innerHTML = '';
+
+                if (logs.length === 0) {
+                    listElement.innerHTML = '<p style="color:#666; text-align:center;">Henüz kayıt yok.</p>';
+                    return;
+                }
+
+                const moodMap = { 'Neutral': 'Nötr', 'Anxious': 'Kaygılı', 'Depressed': 'Depresif', 'Happy': 'Mutlu', 'Irritable': 'Sinirli' };
+
+                logs.forEach(log => {
+                    const dateStr = new Date(log.logDate).toLocaleDateString('tr-TR');
+                    const mood = moodMap[log.moodStatus] || log.moodStatus;
+                    
+                    const li = document.createElement('li');
+                    li.className = 'log-item';
+                    li.innerHTML = `
+                        <div>
+                            <span class="log-date">📅 ${dateStr}</span>
+                            <div class="log-details">
+                                <strong>Yorgunluk:</strong> ${log.fatigueScore}/10 | 
+                                <strong>Stres:</strong> ${log.stressLevel}/10 <br>
+                                <strong>Duygudurum:</strong> ${mood}
+                                ${log.symptomDetails && log.symptomDetails.length > 0 ? `<br>⚠️ Ek: ${log.symptomDetails[0].name} (${log.symptomDetails[0].severity}/10)` : ''}
+                            </div>
+                        </div>
+                        <button class="delete-btn" onclick="deleteLog('${log._id}')">🗑️ Sil</button>
+                    `;
+                    listElement.appendChild(li);
+                });
+            } catch (error) {
+                loadingElement.textContent = 'Hata oluştu.';
+            }
+        }
+
+        // SİLME FONKSİYONU
+        async function deleteLog(id) {
+            if (!confirm('Bu kaydı silmek istiyor musunuz?')) return;
+            const token = localStorage.getItem('token');
+            try {
+                const response = await fetch(`/api/logs/symptom/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'x-auth-token': token }
+                });
+                if (response.ok) loadLogs(); // Listeyi yenile
+            } catch (error) {
+                alert('Silinemedi.');
+            }
+        }
+
+        const symptomForm = document.getElementById('symptomForm');
+        const formMessage = document.getElementById('formMessage');
+
+        symptomForm.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            formMessage.style.display = 'none';
+            const token = localStorage.getItem('token');
+            const formData = {
+                logDate: document.getElementById('logDate').value,
+                fatigueScore: document.getElementById('fatigueScore').value,
+                stressLevel: document.getElementById('stressLevel').value,
+                moodStatus: document.getElementById('moodStatus').value,
+                temperatureInfluence: document.getElementById('temperatureInfluence').value,
+                restrictionNote: document.getElementById('restrictionNote').value,
+                otherSymptomName: document.getElementById('otherSymptomName').value,
+                otherSymptomSeverity: document.getElementById('otherSymptomSeverity').value
+            };
+
+            try {
+                const response = await fetch('/api/logs/symptom', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-auth-token': token },
+                    body: JSON.stringify(formData)
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    formMessage.textContent = 'Semptom günlüğü başarıyla kaydedildi.';
+                    formMessage.className = 'success';
+                    formMessage.style.display = 'block';
+                    symptomForm.reset(); 
+                    document.getElementById('logDate').valueAsDate = new Date();
+                    loadLogs(); // Listeyi yenile
+                } else {
+                    formMessage.textContent = 'Hata: ' + data.message;
+                    formMessage.className = 'error';
+                    formMessage.style.display = 'block';
+                }
+            } catch (error) {
+                formMessage.textContent = 'Sunucuya bağlanırken bir hata oluştu.';
+                formMessage.className = 'error';
+                formMessage.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
