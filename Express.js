@@ -4,7 +4,6 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User'); // User Mongoose modeli 
 
-// Gerçek projede bir ortam değişkeni (env) olmalıdır.
 const JWT_SECRET = process.env.JWT_SECRET || 'cokgizli-ms-takip-anahtari'; 
 
 // --- /api/auth/signup (Kayıt Rotası) ---
